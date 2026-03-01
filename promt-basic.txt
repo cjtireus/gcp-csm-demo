@@ -1,28 +1,34 @@
 Act as a Google Cloud Solutions Architect. Your goal is to generate a complete bash script named csm-demo-script-basic.sh and the necessary Kubernetes manifests to deploy a proxy-less gRPC service mesh on GKE Autopilot.
 
 CRITICAL CONSTRAINTS:
-1. USE ONLY KUBERNETES GATEWAY API (GAMMA): Do not use Istio CRDs (VirtualService, etc.) or legacy Traffic Director APIs. Reference Google Cloud's partial conformance with Gateway API v1.3.0.
+1. USE ONLY KUBERNETES GATEWAY API (GAMMA): Do not use Istio CRDs (VirtualService, etc.) or legacy Traffic Director APIs. Never try to use TDMesh. Reference only sources under this path https://docs.cloud.google.com/service-mesh/docs/gateway/overview and Google Cloud's partial conformance with Gateway API v1.3.0.
 2. PROXY-LESS ONLY: Use gRPC native xDS. No Envoy sidecars.
 3. IDENTITY: Use native GKE Workload Identity (Project-level principal), not custom GSAs.
 4. Use Namespace name 'csm-demo-basic' 
 
 STEP-BY-STEP TASKS:
-1. Enable APIs: cloudresourcemanager, compute, container, networkservices, certificatemanager, privateca, meshconfig.
-2. Create VPC and Subnet in europe-north2.
-3. Provision GKE Autopilot cluster 'csm-autopilot-cluster' with --enable-mesh-certificates and --gateway-api=standard.
-4. Mesh Config: Register the cluster to the Fleet and enable 'servicemesh' with '--config-api gateway'.
-5. IAM: Bind 'privateca.certificateRequester' to the GKE service agent and 'trafficdirector.client' to the allAuthenticatedUsers.
-6. Manifests: 
-    - Create a Namespace with 'mesh.cloud.google.com/csm-injection=proxyless' and `mesh.cloud.google.com/managed-csm="true"`
-    - Create an HTTPRoute (GAMMA) for a 'greeter' service.
+1. Enable APIs: cloudresourcemanager, compute, container, networkservices, networksecurity, certificatemanager, privateca, meshconfig, trafficdirector, gkehub.
+2. Service Identities & IAM Setup: 
+    - Create Service Identities for `meshconfig`, `trafficdirector`, `networkservices`, and `networksecurity` using `gcloud beta services identity create`.
+    - Grant `roles/compute.securityAdmin` and `roles/compute.networkAdmin` to the GKE Service Agent (`service-${PROJECT_NUMBER}@container-engine-robot.iam.gserviceaccount.com`).
+    - Grant `roles/anthosservicemesh.serviceAgent`, `roles/meshcontrolplane.serviceAgent`, and `roles/compute.securityAdmin` to the Cloud Service Mesh Service Agent (`service-${PROJECT_NUMBER}@gcp-sa-servicemesh.iam.gserviceaccount.com`).
+3. Create VPC and Subnet in europe-north2.
+4. Provision GKE Autopilot cluster 'csm-autopilot-cluster' with --enable-mesh-certificates and --gateway-api=standard. Follow 'Prepare to setup the Gateway API for Cloud Service Mesh', https://docs.cloud.google.com/service-mesh/docs/gateway/prepare-gateway
+5. Mesh Config: Register the cluster to the Fleet and enable 'servicemesh' with '--config-api gateway'.
+6. IAM: Bind 'privateca.certificateRequester' to the GKE service agents and grant 'roles/trafficdirector.client' to the member 'group:${PROJECT_ID}.svc.id.goog:/allAuthenticatedUsers/'.
+7. CRDs: Install the GRPCRoute CRD using `kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/gateway-api/v1.1.0/config/crd/standard/gateway.networking.k8s.io_grpcroutes.yaml`
+8. Manifests: 
+    - Create a Namespace with 'mesh.cloud.google.com/csm-injection=proxyless' and `mesh.cloud.google.com/managed-csm="true"`.
+    - Create an HTTPRoute (GAMMA) for a 'greeter' service. Ensure the `parentRefs` refers to the `Service` and includes the correct port.
     - Create ServerTlsPolicy (allowOpen: false) and ClientTlsPolicy.
     - Create a Global Endpoint Policy matching the label `app: greeter` and attach the Server TLS Policy to it.
-    - Create a server that allows me to tester the mesh with grpcurl.
-    - Create a tester pod that allows me to test the mesh with grpcurl. use annotation security.cloud.google.com/use-workload-certificates: ""
-    
-7. Validation: Run a 'grpcurl' command that uses the `xds:/// with plaintext to test the connection to the server pod.
-8. Validation: Run a 'grpcurl' command that uses the `xds:/// with mtls to test the connection to the server pod.
+    - Create a server that allows me to test the mesh with grpcurl.
+    - Create a tester pod that allows me to test the mesh with grpcurl. Use annotation `security.cloud.google.com/use-workload-certificates: ""`.
+9. Validate that the HTTPRoute has been accepted (check status conditions).
+10. Exec into the server pod and print the `GRPC_XDS_BOOTSTRAP` environment variable to verify proxyless injection. Also print the content of the `td-grpc-bootstrap.json` file.     
+11. Validation: Run a 'grpcurl' command that uses the `xds:///` with plaintext to test the connection to the server pod. Validate the response for success and print the outcome.
+12. Validation: Run a 'grpcurl' command that uses the `xds:///` with mtls to test the connection to the server pod. Validate the response for success and print the outcome.
 
 If a command fails during execution, troubleshoot the error by checking IAM permissions or resource readiness before retrying.
 
-Also generate a clean-up-basic.sh script with steps to remove everything. 
+Also generate a clean-up-basic.sh script with steps to remove everything.
