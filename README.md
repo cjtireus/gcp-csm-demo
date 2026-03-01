@@ -43,9 +43,23 @@ gemini "Using the Google Developer Knowledge MCP, follow the instructions in $(c
 
 ### What to expect:
 
-Gemini will identify the need for GKE Autopilot, Private CA, and Gateway API and It will propose a series of gcloud and kubectl commands. Just watch and follow and don't be afraid to update and enhance the promt with more details.
+Gemini operates in a **Research -> Strategy -> Execution** lifecycle:
 
-Important: When the CLI asks for permission to run a command on your machine, press '1' (Allow once) to proceed. Just follow the dialogue.
+1.  **Research & Planning:** Gemini will use the MCP server to query live Google Cloud documentation. It identifies the exact sequence of `gcloud` and `kubectl` commands needed for GKE Autopilot, Private CA, and the Gateway API.
+2.  **Proposed Strategy:** Before acting, it will present a summary of its plan.
+3.  **Interactive Execution:** For every command that modifies your environment, Gemini will explain the intent and ask for permission. 
+    *   Press `1` to **Allow Once**.
+    *   Press `2` to **Deny**.
+    *   Press `3` to **Modify** the command before running.
+4.  **Self-Correction:** If a command fails (e.g., due to a propagation delay or missing IAM permission), Gemini will analyze the error message and automatically propose a fix or a retry strategy.
+
+## Working with Gemini CLI
+Gemini CLI is more than a simple chatbot; it is a collaborative engineer that lives in your terminal. Here are a few tips to get the most out of it:
+
+*   **Contextual Awareness:** Use the `@` symbol to reference files in your project (e.g., `gemini "Explain what @csm-demo-script-basic.sh does"`). This allows Gemini to read the file content directly.
+*   **Iteration over perfection:** Don't be afraid to give broad instructions. If the result isn't exactly what you wanted, just follow up with "Actually, change the region to us-central1" or "Add more logging to that script."
+*   **Troubleshooting:** If you encounter an error during deployment, you can simply paste the error into the CLI. Gemini will investigate your local environment, check logs, and suggest corrections.
+*   **Built-in Help:** You can always type `/help` within the interactive CLI to see a list of available commands and features.
 
 
 # Architecture & Core Technologies
