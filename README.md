@@ -1,6 +1,9 @@
 # Cloud Service Mesh (Proxyless gRPC) on GKE Autopilot with GAMMA & mTLS
 
-This project demonstrates an advanced, bleeding-edge deployment of Google Cloud Service Mesh (CSM). It provisions a completely proxyless gRPC mesh (no Envoy sidecars) using the modern Kubernetes Gateway API for Mesh (GAMMA initiative).
+## About
+This project provides a reference implementation for an advanced, bleeding-edge deployment of **Google Cloud Service Mesh (CSM)**. It showcases a completely **proxyless gRPC mesh** (no Envoy sidecars) using the modern **Kubernetes Gateway API for Mesh (GAMMA initiative)** on GKE Autopilot.
+
+By leveraging the Gemini CLI and the Google Developer Knowledge MCP, this repository demonstrates how to bridge the gap between fragmented developer documentation and production-ready infrastructure through "AI-First" engineering.
 
 ## The "AI-First" Development Story
 This repository wasn't built by manual documentation digging alone. It is the result of an experiment using the Google Developer Knowledge API and the MCP (Model Context Protocol) Server.
