@@ -61,6 +61,15 @@ Data Plane: Proxyless gRPC (Applications act as direct xDS clients).
 ### Examples
 You can find pre-generated reference scripts in the /examples folder. These serve as a baseline if you prefer to run the setup manually without the AI CLI. These files were originally created by the Gemini CLI.
 
+# 💰 Cost Warning
+Running this demo provisions several paid Google Cloud resources, including:
+* **GKE Autopilot Cluster:** Management fees and resource consumption.
+* **Certificate Authority Service (Private CA):** DevOps tier CA pool and root CA.
+* **Cloud Service Mesh:** Managed control plane usage.
+* **Networking Resources:** VPC, subnets, and load balancing components.
+
+**Important:** To avoid incurring unnecessary costs, ensure you run the cleanup script immediately after you are finished with the demo.
+
 # ⚠️ The "Bleeding Edge" Limitation
 As of writing, while the Gateway API (GAMMA) successfully handles routing, there is a known limitation regarding Strict mTLS enforcement. Google is currently in partial conformance with Gateway API 1.3.0. In this specific proxyless gRPC setup, the ServerTlsPolicy fails to bind to the auto-generated BackendServices created by the Gateway controller. The result is permissive mTLS: the mesh is encrypted, but the server does not yet strictly reject plaintext traffic.
 
